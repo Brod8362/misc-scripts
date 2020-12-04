@@ -1,0 +1,40 @@
+#!/bin/zsh
+notify=0
+if [[ $1 = "-n" ]]; then
+	notify=1
+fi
+
+f=$(xclip -selection c -out)
+title=$(youtube-dl -eq $f)
+
+if [ $? -eq 0 ]; then
+	#do nothing
+else
+	if [ $notify -eq 1 ]; then
+		notify-send "Failed to get title $f" "Site likely not supported or invalid link"
+	else
+		echo "Failed to get title for $f, site likely not supported or invalid link"
+	fi
+	exit 1
+fi
+
+if [ $notify -eq 1 ]; then
+	notify-send "$title" "Now downloading"
+else
+	echo "Downloading $title"
+fi
+youtube-dl $f -q
+if [ $? -eq 0 ]; then
+	if [ $notify -eq 1 ]; then
+		notify-send "$title" "Download completed" --urgency=low
+	else 
+		echo "Completed downloading $title"
+	fi
+	exit 0
+fi
+
+if [ $notify -eq 1 ]; then
+	notify-send "$title" "Failed to download" --urgency=critical
+else
+	echo "Failed to download $title"
+fi

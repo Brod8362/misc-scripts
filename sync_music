@@ -1,0 +1,4 @@
+notify-send -u low "Attempting to sync music directories..."
+[ -d /mnt/server/mpd_music ] && rsync -ruv /mnt/server/mpd_music --ignore-existing ~/music/ || notify-send -u critical "Failed to sync music" && exit
+notify-send "Music sync successful"
+
