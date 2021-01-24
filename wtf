@@ -1,0 +1,2 @@
+#!/bin/zsh
+while [ 1 -eq 1 ]; do; read aaaaaaaaa; amixer -q set Master mute; amixer -q set Master unmute; done
