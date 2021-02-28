@@ -1,0 +1,12 @@
+#!/bin/sh
+# first arg is zip
+# seocnd arg is framerate
+# third arg is output name
+unzip "$1" -d tmpout
+if [ $? -ne 0 ]; then
+	echo "failed to unzip"
+	exit
+fi
+
+ffmpeg -r "$2" -f image2 -i ./tmpout/%06d.jpg -vcodec libx264 -crf 25 -pix_fmt yuv420p -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" "$3.mp4"
+rm -rf tmpout
