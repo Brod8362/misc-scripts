@@ -1,0 +1,22 @@
+#!/bin/sh
+if [ "$#" -ne 3 ]; then
+    echo "Usage: $0 [SOURCE.TAR.GZ] [DEST.SQSH]"
+    exit 0
+fi
+mkdir -p sqsh-tmp
+if [ $? -ne 0 ]; then
+    echo "failed to create temp directory"
+    exit 1
+fi
+tar -xf $1 -C sqsh-tmp
+if [ $? -ne 0 ]; then
+    echo "failed to extract tar file"
+    rm -rf sqsh-tmp
+    exit 1
+fi
+mksquashfs sqsh-tmp $2
+if [ $? -ne 0 ]; then
+    echo "failed to create squashfs"  
+    rm -rf sqsh-tmp
+fi
+rm -rf sqsh-tmp
