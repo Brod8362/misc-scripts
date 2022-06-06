@@ -17,7 +17,7 @@ def generate(xdim, ydim, fill):
 
 if __name__ == "__main__":
     if len(sys.argv) != 4:
-        print("bg_generator.py [WxH] [fill]\n\tex: bg_generator.py 1920x1080 35% my_file.png\n")
+        print(f"{sys.argv[0]} [WxH] [fill] [dest_file]\n\tex: bg_generator.py 1920x1080 35% my_file.png\n")
         sys.exit(1)
     try:
         dims_r = map(lambda x: int(x), sys.argv[1].split("x"))
