@@ -143,6 +143,7 @@ if __name__ == "__main__":
     clientConfig.peers.append({
         "PublicKey" : serverConfig.meta["PublicKey"],
         "AllowedIPs" : serverConfig.interface["Address"],
-        "Endpoint" : serverConfig.meta["EndpointIP"]+":"+serverConfig.interface["ListenPort"]
+        "Endpoint" : serverConfig.meta["EndpointIP"]+":"+serverConfig.interface["ListenPort"],
+        "PersistentKeepalive" : "60"
     })
     clientConfig.write(sys.argv[2])
