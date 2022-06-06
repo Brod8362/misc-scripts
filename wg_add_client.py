@@ -85,7 +85,7 @@ class WireguardConfig:
     def add_peer(self, pubkey: str, allowedIP: str):
         peer = {
             "PublicKey": pubkey,
-            "AllowedIPs": allowedIP
+            "AllowedIPs": allowedIP+"/32"
         }
         self.peers.append(peer)
 
