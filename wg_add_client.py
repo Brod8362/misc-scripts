@@ -1,5 +1,4 @@
 #!/bin/python3
-from http import server
 import sys
 import os
 import subprocess
@@ -44,28 +43,27 @@ class WireguardConfig:
                             self.meta[arr[0][2:]] = arr[1]
                         continue
                     parsed = parseline(line.replace(" ", ""))
-                    match parsed: #TODO handle comments
-                        case "[Interface]":
-                            status = "interface"
-                        case "[Peer]":
-                            status = "peer"
-                            if peer_buffer:
-                                self.peers.append(peer_buffer)
-                                peer_buffer = {}
-                        case "":
-                            #empty line
+                    if parsed == "[Interface]":
+                        status = "interface"
+                    elif parsed == "[Peer]":
+                        status = "peer"
+                        if peer_buffer:
+                            self.peers.append(peer_buffer)
+                            peer_buffer = {}
+                    elif not parsed:
+                        #empty line
+                        continue
+                    else:
+                        arr = parsed.split("=", 1)
+                        if len(arr) < 2:
                             continue
-                        case _:
-                            arr = parsed.split("=", 1)
-                            if len(arr) < 2:
-                                continue
-                            k = arr[0]
-                            v = arr[1]
-                            #print(f"k: {k}, v: {v}")
-                            if status == "interface":
-                                self.interface[k] = v
-                            elif status == "peer":
-                                peer_buffer[k] = v
+                        k = arr[0]
+                        v = arr[1]
+                        #print(f"k: {k}, v: {v}")
+                        if status == "interface":
+                            self.interface[k] = v
+                        elif status == "peer":
+                            peer_buffer[k] = v
                 self.peers.append(peer_buffer)
                             
     def export(self) -> str:
