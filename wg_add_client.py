@@ -24,7 +24,7 @@ def gen_public(private: str) -> str:
 def generate_keypair() -> "(str, str)":
     """(private, public)"""
     priv = gen_private()
-    pub = gen_public(priv)
+    pub = gen_public(priv.strip())
     return (priv.strip(), pub.strip())
 
 class WireguardConfig:
@@ -101,7 +101,7 @@ if __name__ == "__main__":
     if len(sys.argv) != 3:
         print("wg_add_client.py: <server_config> <client_config>")
         sys.exit(1)
-    if sys.argv[1] == sys.argv[2]:
+    if os.path.abspath(sys.argv[1]) == os.path.abspath(sys.argv[2]):
         print("server and client file may not be identical")
         sys.exit(1)
     if os.path.exists(sys.argv[2]):
@@ -132,8 +132,15 @@ if __name__ == "__main__":
             break
         else:
             print("\033[1;31minvalid ip address\033[0m")
-    serverConfig.add_peer(public_key, new_client_ip)
-    serverConfig.write(sys.argv[1])
+
+    with open(sys.argv[1], "a") as fd:
+        peer_content = (
+            "\n\n[Peer] #added by wg_add_client\n"
+            f"AllowedIPs = {new_client_ip}/32\n"
+            f"PublicKey = {public_key}\n"
+        )
+        fd.write(peer_content)
+
     clientConfig.interface = {
         "Address": new_client_ip+"/24",
         "PrivateKey": private_key
