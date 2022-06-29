@@ -4,6 +4,7 @@ import sys
 import re
 import datetime
 import matplotlib.pyplot as mpl
+import matplotlib.dates as mdates
 import matplotlib
 
 if len(sys.argv) != 3:
@@ -31,9 +32,13 @@ with open(sys.argv[1], 'r') as ifd:
 
 dates.reverse()
 amount.reverse()
+for i in range(0, max(amount), 100):
+	mpl.axhline(y=i, color="black", linewidth=0.25)
 mpl.plot(dates, amount)
-mpl.locator_params(axis='x', nbins=4)
+mpl.locator_params(axis='x', maxticks=24)
 mpl.locator_params(axis='y', nbins=25)
+year_locator = mdates.YearLocator()
+month_lcoator = mdates.MonthLocator()
 mpl.title("Knuckles bot growth since launch")
 mpl.xlabel("Time")
 mpl.ylabel("Server count")
