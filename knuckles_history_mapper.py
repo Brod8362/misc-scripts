@@ -3,16 +3,19 @@ import csv
 import sys
 import re
 import datetime
+import matplotlib.pyplot as mpl
+import matplotlib
 
 if len(sys.argv) != 3:
 	print("usage: knuckles_history_mapper.py input_file.csv output_file.csv")
 	quit()
 
+
+dates = []
+amount = []
+
 with open(sys.argv[1], 'r') as ifd:
-	with open(sys.argv[2], "w") as ofd:
 		reader = csv.reader(ifd)
-		writer = csv.writer(ofd)
-		writer.writerow(["timestamp", "servers"])
 		pattern = re.compile("\\d+ servers")
 		for row in reader:
 			author_id = row[0]
@@ -23,5 +26,15 @@ with open(sys.argv[1], 'r') as ifd:
 				if res != None:
 					m = res.group(0)
 					count, _ = m.split(' ')
-					t = datetime.datetime.fromtimestamp(float(timestamp))
-					writer.writerow([t.strftime("%Y-%m-%d %H:%M:%S"), count])
+					dates.append(datetime.datetime.fromtimestamp(float(timestamp)))
+					amount.append(int(count))
+
+dates.reverse()
+amount.reverse()
+mpl.plot(dates, amount)
+mpl.locator_params(axis='x', nbins=4)
+mpl.locator_params(axis='y', nbins=25)
+mpl.title("Knuckles bot growth since launch")
+mpl.xlabel("Time")
+mpl.ylabel("Server count")
+mpl.savefig(sys.argv[2], dpi=300)
