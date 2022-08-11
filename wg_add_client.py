@@ -17,7 +17,7 @@ def gen_private() -> str:
 
 
 def gen_public(private: str) -> str:
-    p = subprocess.Popen(["wg", "genkey"], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT)
+    p = subprocess.Popen(["wg", "pubkey"], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT)
     output = p.communicate(input=private.encode("utf-8"))
     return output[0].decode()
 
