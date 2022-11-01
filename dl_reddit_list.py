@@ -107,7 +107,7 @@ def download_imgur_album(link: str, base_path: str) -> bool:
 
     return True
 
-def download(link: str, sr: str, id: str, name: str) -> bool:
+def download(link: str, sr: str, id: str, name: str, simulate: bool) -> bool:
     path = f"srdl/{sr}"
     replacements = {
         ' ': '_',
@@ -124,27 +124,49 @@ def download(link: str, sr: str, id: str, name: str) -> bool:
         os.makedirs(path)
     #TODO: imgur albums, gyfact
     direct_ext = ("mp4", "mkv", "png", "jpg", "jpeg", "gifv", "gif", "webm")
+    direct_mime = {
+        "video/mp4":"mp4",
+        "image/jpeg":"jpg",
+        "image/png":"png",
+        "image/gif": "gif"
+    }
     try:
-        if link.endswith(direct_ext):
-            return download_direct(link, fname)
-        elif "imgur.com/a/" in link:
-            return download_imgur_album(link, fname)
-        elif "imgur.com/" in link:
-            #imgur non-direct image link
-            return False
+        resp = requests.head(link, allow_redirects=True)
+        content_type = resp.headers['Content-Type'].split(';')[0].strip()
+        if "text/html" in content_type:
+            if "imgur.com/a/" in link:
+                if simulate:
+                    return True
+                return download_imgur_album(link, fname)
+            elif "imgur.com/" in link:
+                #imgur non-direct image link
+                return False
+            else: #attempt yt-dlp
+                sim_flag = "-s" if simulate else ""
+                command =   ["yt-dlp", "-q", sim_flag,  "-o", fname+".%(ext)s", resp.url]
+                proc = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                proc.wait()
+                if proc.returncode != 0:
+                    log_error(f"Failed to download URL: {link}")
+                return proc.returncode == 0
+        elif content_type in direct_mime:
+            if simulate:
+                return True
+            return download_direct(link, fname+"."+direct_mime[content_type])
         else: #attempt yt-dlp 
-            command =   ["yt-dlp", "-q", "-o", fname+".%(ext)s", link]
-            proc = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            proc.wait()
-            if proc.returncode != 0:
-                log_error(f"Failed to download URL: {link}")
-            return proc.returncode == 0
+            log_error(f"Failed to download: unsupported mime-type {content_type}")
+            if simulate:
+                return True
+            
     except:
         return False
 
 def main():
     post_queue: queue.Queue = queue.Queue()
     csv_mode = "-csv" in sys.argv
+    simulate_mode = "-s" in sys.argv
+    if simulate_mode:
+        log_info("Running in simulate mode, files will NOT be downloaded.")
     line = 0
     for data in sys.stdin:
         if csv_mode:
@@ -176,7 +198,7 @@ def main():
                 status(f"{id} has no media", progress,init_size, start_time, ex_data)
                 fails[id] = "no_media"
                 continue
-            if not download(link, subreddit, id, title):
+            if not download(link, subreddit, id, title, simulate_mode):
                 status(f"Failed to download {id}", progress,init_size, start_time, ex_data)
                 ex_data["dl_err"] = ex_data.get("dl_err", 0)+1
                 fails[id] = "dl_err"
